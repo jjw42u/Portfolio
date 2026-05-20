@@ -524,6 +524,16 @@ PRODUCTS.forEach(p => {
   gallery.appendChild(section);
 });
 
+// ── a 이미지 프리로드 (갤러리 로드 완료 후 백그라운드에서)
+window.addEventListener('load', () => {
+  PRODUCTS.forEach(p => {
+    for (let n = 1; n <= p.count; n++) {
+      const pre = new Image();
+      pre.src = `images/${p.id}-${n}a.webp`;
+    }
+  });
+});
+
 // ── 필터
 filters.addEventListener('click', e => {
   const btn = e.target.closest('.filter-btn');
