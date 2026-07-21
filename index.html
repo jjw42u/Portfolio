@@ -110,8 +110,46 @@
     .divider {
       border: none;
       border-top: 1px solid var(--border);
-      margin-bottom: 32px;
+      margin-bottom: 0;
     }
+
+    /* ── 탭 */
+    .tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 32px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .tab-btn {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 16px 28px;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      position: relative;
+      transition: color 0.2s;
+    }
+
+    .tab-btn::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: var(--accent);
+      transform: scaleX(0);
+      transition: transform 0.2s ease;
+    }
+
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active { color: var(--text); }
+    .tab-btn.active::after { transform: scaleX(1); }
 
     /* ── 메인 */
     main {
@@ -120,7 +158,10 @@
       padding: 0 40px 60px;
     }
 
-    /* ── 그리드: 항상 3열 */
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ── 그리드: 3열 */
     .grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -134,7 +175,7 @@
     /* ── 이미지 타일 */
     .tile {
       position: relative;
-      aspect-ratio: 3 / 5;
+      aspect-ratio: 3 / 4;
       overflow: hidden;
       background: #eee;
       cursor: pointer;
@@ -194,11 +235,12 @@
       pointer-events: all;
     }
 
+    /* Product: before/after 2분할 */
     #lb-content {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 20px;
+      gap: 24px;
       max-width: 92vw;
       max-height: 88vh;
       transition: opacity 0.2s ease;
@@ -229,16 +271,32 @@
     }
 
     .lb-divider {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+      width: 1px;
+      height: 60vh;
+      background: rgba(255,255,255,0.12);
+      flex-shrink: 0;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-.lb-arrow {
-  font-size: 12px;
-  color: rgba(255,255,255,0.3);
-}
+    .lb-arrow {
+      font-size: 12px;
+      color: rgba(255,255,255,0.3);
+    }
+
+    /* Fashion: 단독 이미지 */
+    #lb-single {
+      display: none;
+      max-width: 88vw;
+      max-height: 88vh;
+      object-fit: contain;
+      user-select: none;
+      transition: opacity 0.2s ease;
+    }
+
+    #lb-single.fade { opacity: 0; }
 
     @media (max-width: 640px) {
       #lb-content {
@@ -250,6 +308,7 @@
       }
       .lb-panel img { max-width: 86vw; max-height: 40vh; }
       .lb-divider { width: 60vw; height: 1px; }
+      .lb-arrow { transform: rotate(90deg); }
     }
 
     .lb-btn {
@@ -318,7 +377,7 @@
   <div class="header-top">
     <div class="header-left">
       <p class="label">Portfolio</p>
-      <h1>Product<br>Photography</h1>
+      <h1>Personal<br>Photography</h1>
     </div>
     <div class="header-contact">
       <p class="contact-heading">Contact</p>
@@ -333,11 +392,20 @@
     </div>
   </div>
   <hr class="divider" />
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="product">Product</button>
+    <button class="tab-btn" data-tab="fashion">Fashion</button>
+  </div>
 </header>
 
 <!-- ── 갤러리 -->
 <main>
-  <div class="grid" id="gallery"></div>
+  <div class="tab-panel active" id="tab-product">
+    <div class="grid" id="gallery-product"></div>
+  </div>
+  <div class="tab-panel" id="tab-fashion">
+    <div class="grid" id="gallery-fashion"></div>
+  </div>
 </main>
 
 <!-- ── 라이트박스 -->
@@ -345,6 +413,7 @@
   <button class="lb-btn" id="lb-close" aria-label="닫기">&#x2715;</button>
   <button class="lb-btn" id="lb-prev"  aria-label="이전">&#8249;</button>
 
+  <!-- Product: before/after -->
   <div id="lb-content">
     <div class="lb-panel">
       <img id="lb-img-before" src="" alt="보정 전" />
@@ -354,10 +423,13 @@
       <span class="lb-arrow">&#9654;</span>
     </div>
     <div class="lb-panel">
-      <img id="lb-img-after" src="" alt="보정 후" />
+      <img id="lb-img-after" src="" alt="보정 후" style="cursor:zoom-in;" />
       <span class="lb-tag">After</span>
     </div>
   </div>
+
+  <!-- Fashion: 단독 -->
+  <img id="lb-single" src="" alt="확대 이미지" />
 
   <button class="lb-btn" id="lb-next" aria-label="다음">&#8250;</button>
   <div id="lb-counter"></div>
@@ -365,48 +437,78 @@
 
 <!-- ── 푸터 -->
 <footer>
-  <p>Product Photography Portfolio</p>
+  <p>Personal Photography Portfolio</p>
   <p style="margin-top: 8px;">© 2026 jjw42u@gmail.com · All rights reserved</p>
 </footer>
 
 <script>
 // ═══════════════════════════════════════════
-//  ✏️  사진 총 개수만 바꾸세요
-//  파일명 규칙: images/1.jpg, 2.jpg ...
-//              images/1a.jpg, 2a.jpg ... (before)
+//  ✏️  여기만 수정하세요
 // ═══════════════════════════════════════════
-const TOTAL = 9; // 사진 총 개수
-const EXT   = 'webp';
+const PRODUCT_TOTAL = 9;   // product 사진 총 개수 (1.webp ~ N.webp)
+const FASHION_TOTAL = 6;   // fashion 사진 총 개수 (h-1.webp ~ h-N.webp)
+const EXT = 'webp';
 // ═══════════════════════════════════════════
 
-const gallery = document.getElementById('gallery');
+// ── 탭 전환
+const tabBtns   = document.querySelectorAll('.tab-btn');
+const tabPanels = document.querySelectorAll('.tab-panel');
 
-// ── 갤러리 빌드
-for (let n = 1; n <= TOTAL; n++) {
-  const tile = document.createElement('div');
-  tile.className = 'tile';
+tabBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    tabBtns.forEach(b => b.classList.remove('active'));
+    tabPanels.forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
+  });
+});
 
-  const img = document.createElement('img');
-  img.src      = `images/${n}.${EXT}`;
-  img.alt      = `Photo ${n}`;
-  img.loading  = 'eager';
-  img.decoding = 'sync';
-  img.addEventListener('load',  () => img.classList.add('loaded'));
-  img.addEventListener('error', () => { ph.innerHTML = '✕'; });
+// ── 갤러리 빌드 공통
+function buildGallery(containerId, total, pathFn, clickFn) {
+  const grid = document.getElementById(containerId);
+  for (let n = 1; n <= total; n++) {
+    const tile = document.createElement('div');
+    tile.className = 'tile';
 
-  const ph = document.createElement('div');
-  ph.className = 'tile-placeholder';
-  ph.innerHTML = `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="1"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`;
+    const img = document.createElement('img');
+    img.src      = pathFn(n);
+    img.alt      = `Photo ${n}`;
+    img.loading  = 'eager';
+    img.decoding = 'sync';
 
-  tile.appendChild(img);
-  tile.appendChild(ph);
-  tile.addEventListener('click', () => openLightbox(n));
-  gallery.appendChild(tile);
+    const ph = document.createElement('div');
+    ph.className = 'tile-placeholder';
+    ph.innerHTML = `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="1"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`;
+
+    img.addEventListener('load',  () => img.classList.add('loaded'));
+    img.addEventListener('error', () => { ph.innerHTML = '✕'; });
+
+    tile.appendChild(img);
+    tile.appendChild(ph);
+    tile.addEventListener('click', () => clickFn(n));
+    grid.appendChild(tile);
+  }
 }
 
-// ── a 이미지 프리로드 (갤러리 로드 완료 후 백그라운드에서)
+// Product 갤러리
+buildGallery(
+  'gallery-product',
+  PRODUCT_TOTAL,
+  n => `images/${n}.${EXT}`,
+  n => openLightbox('product', n)
+);
+
+// Fashion 갤러리
+buildGallery(
+  'gallery-fashion',
+  FASHION_TOTAL,
+  n => `images/h-${n}.${EXT}`,
+  n => openLightbox('fashion', n)
+);
+
+// ── Product a 이미지 프리로드
 window.addEventListener('load', () => {
-  for (let n = 1; n <= TOTAL; n++) {
+  for (let n = 1; n <= PRODUCT_TOTAL; n++) {
     const pre = new Image();
     pre.src = `images/${n}a.${EXT}`;
   }
@@ -415,6 +517,7 @@ window.addEventListener('load', () => {
 // ── 라이트박스
 const lightbox    = document.getElementById('lightbox');
 const lbContent   = document.getElementById('lb-content');
+const lbSingle    = document.getElementById('lb-single');
 const lbImgBefore = document.getElementById('lb-img-before');
 const lbImgAfter  = document.getElementById('lb-img-after');
 const lbCounter   = document.getElementById('lb-counter');
@@ -422,10 +525,22 @@ const lbPrev      = document.getElementById('lb-prev');
 const lbNext      = document.getElementById('lb-next');
 const lbClose     = document.getElementById('lb-close');
 
-let current = 1;
+let currentMode  = 'product'; // 'product' | 'fashion'
+let currentIndex = 1;
 
-function openLightbox(n) {
-  current = n;
+function openLightbox(mode, n) {
+  currentMode  = mode;
+  currentIndex = n;
+
+  // 모드에 따라 레이아웃 전환
+  if (mode === 'product') {
+    lbContent.style.display = 'flex';
+    lbSingle.style.display  = 'none';
+  } else {
+    lbContent.style.display = 'none';
+    lbSingle.style.display  = 'block';
+  }
+
   showImage();
   lightbox.classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -436,48 +551,61 @@ function closeLightbox() {
   document.body.style.overflow = '';
   lbImgBefore.src = '';
   lbImgAfter.src  = '';
+  lbSingle.src    = '';
 }
 
 function showImage() {
-  lbContent.classList.add('fade');
-  setTimeout(() => {
-    lbImgBefore.src = `images/${current}a.${EXT}`;
-    lbImgAfter.src  = `images/${current}.${EXT}`;
-    lbContent.classList.remove('fade');
-  }, 150);
+  const total = currentMode === 'product' ? PRODUCT_TOTAL : FASHION_TOTAL;
+  const n     = currentIndex;
 
-  lbCounter.textContent = `${current} / ${TOTAL}`;
-  lbPrev.classList.toggle('hidden', current === 1);
-  lbNext.classList.toggle('hidden', current === TOTAL);
+  if (currentMode === 'product') {
+    lbContent.classList.add('fade');
+    setTimeout(() => {
+      lbImgBefore.src = `images/${n}a.${EXT}`;
+      lbImgAfter.src  = `images/${n}.${EXT}`;
+      lbContent.classList.remove('fade');
+    }, 150);
+  } else {
+    lbSingle.classList.add('fade');
+    setTimeout(() => {
+      lbSingle.src = `images/h-${n}.${EXT}`;
+      lbSingle.classList.remove('fade');
+    }, 150);
+  }
+
+  lbCounter.textContent = `${n} / ${total}`;
+  lbPrev.classList.toggle('hidden', n === 1);
+  lbNext.classList.toggle('hidden', n === total);
 }
 
-// 사진 클릭 → 원본 크기 새 탭에서 열기 (after만)
-lbImgAfter.style.cursor = 'zoom-in';
+// After 클릭 → 원본 새 탭
 lbImgAfter.addEventListener('click', () => {
-  window.open(`images/${current}.webp`, '_blank');
+  window.open(`images/${currentIndex}.${EXT}`, '_blank');
 });
 
 lbClose.addEventListener('click', closeLightbox);
-lbPrev.addEventListener('click', () => { current--; showImage(); });
-lbNext.addEventListener('click', () => { current++; showImage(); });
+lbPrev.addEventListener('click', () => { currentIndex--; showImage(); });
+lbNext.addEventListener('click', () => { currentIndex++; showImage(); });
 
 lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightbox(); });
 
 document.addEventListener('keydown', e => {
   if (!lightbox.classList.contains('open')) return;
+  const total = currentMode === 'product' ? PRODUCT_TOTAL : FASHION_TOTAL;
   if (e.key === 'Escape')      closeLightbox();
-  if (e.key === 'ArrowLeft'  && current > 1)     { current--; showImage(); }
-  if (e.key === 'ArrowRight' && current < TOTAL) { current++; showImage(); }
+  if (e.key === 'ArrowLeft'  && currentIndex > 1)     { currentIndex--; showImage(); }
+  if (e.key === 'ArrowRight' && currentIndex < total) { currentIndex++; showImage(); }
 });
 
 // 모바일 스와이프
 let touchStartX = 0;
 lightbox.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].clientX; }, { passive: true });
 lightbox.addEventListener('touchend', e => {
+  const total = currentMode === 'product' ? PRODUCT_TOTAL : FASHION_TOTAL;
   const dx = e.changedTouches[0].clientX - touchStartX;
   if (Math.abs(dx) < 40) return;
-  if (dx < 0 && current < TOTAL) { current++; showImage(); }
-  if (dx > 0 && current > 1)     { current--; showImage(); }
+  if (dx < 0 && currentIndex < total) { currentIndex++; showImage(); }
+  if (dx > 0 && currentIndex > 1)     { currentIndex--; showImage(); }
 });
 </script>
 </body>
