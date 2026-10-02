@@ -395,6 +395,7 @@
   <div class="tabs">
     <button class="tab-btn active" data-tab="product">Product</button>
     <button class="tab-btn" data-tab="fashion">Fashion</button>
+    <button class="tab-btn" data-tab="interior">Interior</button>
   </div>
 </header>
 
@@ -405,6 +406,9 @@
   </div>
   <div class="tab-panel" id="tab-fashion">
     <div class="grid" id="gallery-fashion"></div>
+  </div>
+  <div class="tab-panel" id="tab-interior">
+    <div class="grid" id="gallery-interior"></div>
   </div>
 </main>
 
@@ -446,7 +450,8 @@
 //  ✏️  여기만 수정하세요
 // ═══════════════════════════════════════════
 const PRODUCT_TOTAL = 9;   // product 사진 총 개수 (1.webp ~ N.webp)
-const FASHION_TOTAL = 6;   // fashion 사진 총 개수 (h-1.webp ~ h-N.webp)
+const FASHION_TOTAL = 5;   // fashion 사진 총 개수 (h-1.webp ~ h-N.webp)
+const INTERIOR_TOTAL = 4;  // interior 사진 총 개수 (i-1.webp ~ i-N.webp)
 const EXT = 'webp';
 // ═══════════════════════════════════════════
 
@@ -506,6 +511,14 @@ buildGallery(
   n => openLightbox('fashion', n)
 );
 
+// Interior 갤러리
+buildGallery(
+  'gallery-interior',
+  INTERIOR_TOTAL,
+  n => `images/i-\${n}.\${EXT}`,
+  n => openLightbox('interior', n)
+);
+
 // ── Product a 이미지 프리로드
 window.addEventListener('load', () => {
   for (let n = 1; n <= PRODUCT_TOTAL; n++) {
@@ -525,7 +538,7 @@ const lbPrev      = document.getElementById('lb-prev');
 const lbNext      = document.getElementById('lb-next');
 const lbClose     = document.getElementById('lb-close');
 
-let currentMode  = 'product'; // 'product' | 'fashion'
+let currentMode  = 'product'; // 'product' | 'fashion' | 'interior'
 let currentIndex = 1;
 
 function openLightbox(mode, n) {
@@ -555,7 +568,7 @@ function closeLightbox() {
 }
 
 function showImage() {
-  const total = currentMode === 'product' ? PRODUCT_TOTAL : FASHION_TOTAL;
+  const total = currentMode === 'product' ? PRODUCT_TOTAL : currentMode === 'fashion' ? FASHION_TOTAL : INTERIOR_TOTAL;
   const n     = currentIndex;
 
   if (currentMode === 'product') {
@@ -568,7 +581,7 @@ function showImage() {
   } else {
     lbSingle.classList.add('fade');
     setTimeout(() => {
-      lbSingle.src = `images/h-${n}.${EXT}`;
+      lbSingle.src = currentMode === 'fashion' ? `images/h-${n}.${EXT}` : `images/i-${n}.${EXT}`;
       lbSingle.classList.remove('fade');
     }, 150);
   }
@@ -591,7 +604,7 @@ lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightb
 
 document.addEventListener('keydown', e => {
   if (!lightbox.classList.contains('open')) return;
-  const total = currentMode === 'product' ? PRODUCT_TOTAL : FASHION_TOTAL;
+  const total = currentMode === 'product' ? PRODUCT_TOTAL : currentMode === 'fashion' ? FASHION_TOTAL : INTERIOR_TOTAL;
   if (e.key === 'Escape')      closeLightbox();
   if (e.key === 'ArrowLeft'  && currentIndex > 1)     { currentIndex--; showImage(); }
   if (e.key === 'ArrowRight' && currentIndex < total) { currentIndex++; showImage(); }
@@ -601,7 +614,7 @@ document.addEventListener('keydown', e => {
 let touchStartX = 0;
 lightbox.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].clientX; }, { passive: true });
 lightbox.addEventListener('touchend', e => {
-  const total = currentMode === 'product' ? PRODUCT_TOTAL : FASHION_TOTAL;
+  const total = currentMode === 'product' ? PRODUCT_TOTAL : currentMode === 'fashion' ? FASHION_TOTAL : INTERIOR_TOTAL;
   const dx = e.changedTouches[0].clientX - touchStartX;
   if (Math.abs(dx) < 40) return;
   if (dx < 0 && currentIndex < total) { currentIndex++; showImage(); }
